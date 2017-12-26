@@ -7,9 +7,13 @@
 
 #include <fstream>
 #include <opencv2/opencv.hpp>
+#include <iostream>
 #include "Detector.h"
 
 #define BGS_DEBUG_MODE
+
+using namespace std;
+using namespace cv;
 
 class Blob
 {
