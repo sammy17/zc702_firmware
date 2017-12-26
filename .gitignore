@@ -8,3 +8,5 @@ node
 .idea/*
 .project
 .settings/*
+build/*
+.vscode/*

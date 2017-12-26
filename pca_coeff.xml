@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<name>PCA</name>
+<vectors type_id="opencv-matrix">
+  <rows>1</rows>
+  <cols>8</cols>
+  <dt>f</dt>
+  <data>
+    6.81834354e-04 -5.67079987e-03 7.55861541e-03 1.20455744e-02
+    8.57531607e-01 -3.12307820e-05 5.14005542e-01 1.42619489e-02</data></vectors>
+<values type_id="opencv-matrix">
+  <rows>1</rows>
+  <cols>1</cols>
+  <dt>f</dt>
+  <data>
+    7.10373150e+06</data></values>
+<mean type_id="opencv-matrix">
+  <rows>1</rows>
+  <cols>8</cols>
+  <dt>f</dt>
+  <data>
+    1.10640160e+02 1.10502914e+02 2.38206940e+01 3.75285530e+01
+    1.56506201e+03 7.84351647e-01 9.18662781e+02 4.51372261e+01</data></mean>
+<TH>1.5402701416015625e+03</TH>
+</opencv_storage>

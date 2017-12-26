@@ -12,7 +12,6 @@ class Detector
 {
 public:
     virtual std::vector<cv::Rect> detect(cv::Mat &img) = 0;
-    std::vector<cv::MatND> histograms;
     static cv::MatND getHistogram(cv::Mat img,cv::Rect region);
 };
 
