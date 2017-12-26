@@ -133,11 +133,6 @@ trainingMode(trainingMode),
 coeffFilePath(coeffFilePath)
 {
     frameCount = 0;
-    if(method==BGS_GMM)
-        pMOG2 = cv::bgsegm::createBackgroundSubtractorMOG(200,
-                                                          6,
-                                                          0.7,
-                                                          0);
     if(!trainingMode)
     {
         coeffFile.open(coeffFilePath,FileStorage::READ);

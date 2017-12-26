@@ -7,7 +7,6 @@
 
 #include <fstream>
 #include <opencv2/opencv.hpp>
-#include <opencv2/bgsegm.hpp>
 #include "Detector.h"
 
 #define BGS_DEBUG_MODE
@@ -66,7 +65,6 @@ private:
     cv::Mat mask;
     uint8_t frameCount;
     double TH;
-    cv::Ptr<cv::BackgroundSubtractor> pMOG2; //MOG2 Background subtractor
     void GammaCorrection(cv::Mat& src, cv::Mat& dst, float fGamma);
     int method;
     bool doGamaCorrection;
