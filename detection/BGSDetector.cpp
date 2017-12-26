@@ -64,7 +64,7 @@ std::vector<cv::Rect> BGSDetector::detect(cv::Mat &img)
         else
         {
             Mat x1(1,8,CV_32F,record);
-            Mat d = pca.project(x1);
+            Mat d = x1 * coeffMat.t();
             if(d.at<float>(0)>detectorTH)
                 found.push_back(possibleBlob.currentBoundingRect);
         }
@@ -138,8 +138,8 @@ coeffFilePath(coeffFilePath)
         coeffFile.open(coeffFilePath,FileStorage::READ);
         if(!coeffFile.isOpened())
             throw runtime_error("Unable to load pca coefficients.");
-        pca.read(coeffFile.root());
         coeffFile["TH"] >> detectorTH;
+        coeffFile["vectors"] >> coeffMat;
     }
 
 }
@@ -189,74 +189,6 @@ void BGSDetector::GammaCorrection(cv::Mat &src, cv::Mat &dst, float fGamma)
         }
     }
 
-}
-
-void BGSDetector::trainDetector()
-{
-    if(!trainingMode)
-        throw runtime_error("Training is only available in training mode.");
-    Mat dataMat((int)data.size(),8,CV_32F);
-    for(int j=0;j<data.size();j++)
-    {
-        for(int k=0;k<8;k++)
-        {
-            dataMat.at<float>(j,k) = data[j].data[k];
-        }
-    }
-    pca = PCA(dataMat,Mat(),PCA::DATA_AS_ROW,1);
-    coeffFile.open(coeffFilePath,FileStorage::WRITE);
-    if(!coeffFile.isOpened())
-        throw runtime_error("Unable to open coefficient file.");
-    pca.write(coeffFile);
-
-
-    Mat matSrc = pca.project(dataMat);
-    double minVal,maxVal;
-    minMaxLoc(matSrc,&minVal,&maxVal);
-
-    int nHistSize = 65536;
-    float fRange[] = { (float)minVal, (float)maxVal};
-    float binSize = ((float)maxVal -  (float)minVal)/nHistSize;
-    const float* fHistRange = { fRange };
-
-    Mat matHist;
-    calcHist(&matSrc, 1, 0, cv::Mat(), matHist, 1, &nHistSize, &fHistRange);
-    normalize(matHist,matHist,1,0,NORM_MINMAX);
-
-    float total = 0.0;
-    float sumB = 0;
-    float wB = 0;
-    float maximum = 0.0;
-    float sum1 = 0;
-    float level;
-    for(int i=0;i<nHistSize;i++)
-    {
-        sum1 += (i*binSize+binSize/2+minVal)*matHist.at<float>(i);
-        total += matHist.at<float>(i);
-    }
-
-    for(int i=0;i<nHistSize;i++)
-    {
-        wB = wB + matHist.at<float>(i);
-        float wF = total - wB;
-        if (wB == 0 || wF == 0)
-            continue;
-        sumB = sumB + (float) (i*binSize+binSize/2+minVal) * matHist.at<float>(i);
-        float mF = (sum1 - sumB) / wF;
-        float  between = wB * wF * ((sumB / wB) - mF) * ((sumB / wB) - mF);
-        if ( between >= maximum )
-        {
-            level = (float)(i*binSize+binSize/2+minVal);
-            maximum = between;
-        }
-
-    }
-
-    cout << "TH: " << level << endl;
-
-    coeffFile << "TH" << level;
-
-    coeffFile.release();
 }
 
 Blob::Blob(std::vector<cv::Point> _contour)

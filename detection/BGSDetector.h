@@ -78,6 +78,7 @@ private:
     double coeff[64];
     PCA pca;
     float detectorTH=0;
+    Mat coeffMat;
 
 };
 
