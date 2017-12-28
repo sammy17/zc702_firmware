@@ -166,7 +166,6 @@ int main(int argc, char *argv[]) {
     // Initializing IP Core Ends here .........................
 
     
-    bool isFirst = true;
     BGSDetector detector(30,
                           BGS_MOVING_AVERAGE,
                           false,
@@ -195,6 +194,7 @@ int main(int argc, char *argv[]) {
         }
 
         cap>>img;
+        cout << img.rows << "," << img.cols << ": " << img.depth() << endl;
         cv::cvtColor(img, grey, CV_BGR2GRAY);
         memcpy(rgb_src,img.data,76800*3);
         memcpy(src,grey.data,76800);

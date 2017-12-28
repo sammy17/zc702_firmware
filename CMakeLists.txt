@@ -9,8 +9,7 @@ include_directories( ${Boost_INCLUDE_DIR})
 
 
 file(GLOB SOURCE_FILES
-	"*.cpp"
-	"*.h"
+	"maxi_new.cpp"
 	"drivers/*.c"
 	"drivers/*.h"
 	"include/xparameters.h"
@@ -20,7 +19,6 @@ file(GLOB SOURCE_FILES
         )
 
 #set(SOURCE_FILES maxi_new.cpp drivers/xbacksub.c drivers/xbacksub.h drivers/xfeature.c drivers/xfeature.h include/xparameters.h detection/*.h detection/*.cpp)
-
 add_executable(node ${SOURCE_FILES})
 
 target_link_libraries( node ${OpenCV_LIBS} ${Boost_LIBRARIES} -lpthread -lboost_serialization)
