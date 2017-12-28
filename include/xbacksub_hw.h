@@ -5,6 +5,24 @@
 // 
 // ==============================================================
 
+// AXILiteS
+// 0x00 : reserved
+// 0x04 : reserved
+// 0x08 : reserved
+// 0x0c : reserved
+// 0x10 : Data signal of frame_in
+//        bit 31~0 - frame_in[31:0] (Read/Write)
+// 0x14 : reserved
+// 0x18 : Data signal of frame_out
+//        bit 31~0 - frame_out[31:0] (Read/Write)
+// 0x1c : reserved
+// (SC = Self Clear, COR = Clear on Read, TOW = Toggle on Write, COH = Clear on Handshake)
+
+#define XBACKSUB_AXILITES_ADDR_FRAME_IN_DATA  0x10
+#define XBACKSUB_AXILITES_BITS_FRAME_IN_DATA  32
+#define XBACKSUB_AXILITES_ADDR_FRAME_OUT_DATA 0x18
+#define XBACKSUB_AXILITES_BITS_FRAME_OUT_DATA 32
+
 // CRTL_BUS
 // 0x00 : Control signals
 //        bit 0  - ap_start (Read/Write/COH)
@@ -40,22 +58,4 @@
 #define XBACKSUB_CRTL_BUS_BITS_AP_RETURN 32
 #define XBACKSUB_CRTL_BUS_ADDR_INIT_DATA 0x18
 #define XBACKSUB_CRTL_BUS_BITS_INIT_DATA 1
-
-// AXILiteS
-// 0x00 : reserved
-// 0x04 : reserved
-// 0x08 : reserved
-// 0x0c : reserved
-// 0x10 : Data signal of frame_in
-//        bit 31~0 - frame_in[31:0] (Read/Write)
-// 0x14 : reserved
-// 0x18 : Data signal of frame_out
-//        bit 31~0 - frame_out[31:0] (Read/Write)
-// 0x1c : reserved
-// (SC = Self Clear, COR = Clear on Read, TOW = Toggle on Write, COH = Clear on Handshake)
-
-#define XBACKSUB_AXILITES_ADDR_FRAME_IN_DATA  0x10
-#define XBACKSUB_AXILITES_BITS_FRAME_IN_DATA  32
-#define XBACKSUB_AXILITES_ADDR_FRAME_OUT_DATA 0x18
-#define XBACKSUB_AXILITES_BITS_FRAME_OUT_DATA 32
 

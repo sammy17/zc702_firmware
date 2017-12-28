@@ -37,6 +37,7 @@
 /***************** Macros (Inline Functions) Definitions *********************/
 
 #define TX_BASE_ADDR 0x01000000
+#define RGB_TX_BASE_ADDR 0x03000000
 #define DDR_RANGE 0x01000000
 #define RX_BASE_ADDR 0x02000000
 
@@ -46,6 +47,7 @@
 
 #define M_AXI_BOUNDING 0x21000000
 #define M_AXI_FEATUREH 0x29000000
+
 
 using namespace cv;
 using namespace std;
@@ -60,8 +62,9 @@ int fd; // A file descriptor to the video device
 int type;
 // uint8_t * ybuffer = new uint8_t[N];
 
-uint32_t *src;
-uint8_t *dst;
+uint8_t * src; 
+uint8_t * rgb_src; 
+uint8_t * dst; 
 
 uint16_t *m_axi_bound;
 uint16_t *m_axi_feature;

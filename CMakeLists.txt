@@ -19,7 +19,7 @@ file(GLOB SOURCE_FILES
         "detection/*.hpp"
         )
 
-#set(SOURCE_FILES maxi.cpp drivers/xbacksub.c drivers/xbacksub.h drivers/xfeature.c drivers/xfeature.h include/xparameters.h detection/*.h detection/*.cpp)
+#set(SOURCE_FILES maxi_new.cpp drivers/xbacksub.c drivers/xbacksub.h drivers/xfeature.c drivers/xfeature.h include/xparameters.h detection/*.h detection/*.cpp)
 
 add_executable(node ${SOURCE_FILES})
 

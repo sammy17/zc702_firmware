@@ -40,14 +40,14 @@ typedef uint32_t u32;
 #else
 typedef struct {
     u16 DeviceId;
-    u32 Crtl_bus_BaseAddress;
     u32 Axilites_BaseAddress;
+    u32 Crtl_bus_BaseAddress;
 } XBacksub_Config;
 #endif
 
 typedef struct {
-    u32 Crtl_bus_BaseAddress;
     u32 Axilites_BaseAddress;
+    u32 Crtl_bus_BaseAddress;
     u32 IsReady;
 } XBacksub;
 
@@ -90,12 +90,12 @@ void XBacksub_EnableAutoRestart(XBacksub *InstancePtr);
 void XBacksub_DisableAutoRestart(XBacksub *InstancePtr);
 u32 XBacksub_Get_return(XBacksub *InstancePtr);
 
-void XBacksub_Set_init(XBacksub *InstancePtr, u32 Data);
-u32 XBacksub_Get_init(XBacksub *InstancePtr);
 void XBacksub_Set_frame_in(XBacksub *InstancePtr, u32 Data);
 u32 XBacksub_Get_frame_in(XBacksub *InstancePtr);
 void XBacksub_Set_frame_out(XBacksub *InstancePtr, u32 Data);
 u32 XBacksub_Get_frame_out(XBacksub *InstancePtr);
+void XBacksub_Set_init(XBacksub *InstancePtr, u32 Data);
+u32 XBacksub_Get_init(XBacksub *InstancePtr);
 
 void XBacksub_InterruptGlobalEnable(XBacksub *InstancePtr);
 void XBacksub_InterruptGlobalDisable(XBacksub *InstancePtr);

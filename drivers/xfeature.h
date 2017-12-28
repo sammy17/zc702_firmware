@@ -40,14 +40,14 @@ typedef uint32_t u32;
 #else
 typedef struct {
     u16 DeviceId;
-    u32 Crtl_bus_BaseAddress;
     u32 Axilites_BaseAddress;
+    u32 Crtl_bus_BaseAddress;
 } XFeature_Config;
 #endif
 
 typedef struct {
-    u32 Crtl_bus_BaseAddress;
     u32 Axilites_BaseAddress;
+    u32 Crtl_bus_BaseAddress;
     u32 IsReady;
 } XFeature;
 

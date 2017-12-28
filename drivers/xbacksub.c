@@ -14,8 +14,8 @@ int XBacksub_CfgInitialize(XBacksub *InstancePtr, XBacksub_Config *ConfigPtr) {
     Xil_AssertNonvoid(InstancePtr != NULL);
     Xil_AssertNonvoid(ConfigPtr != NULL);
 
-    InstancePtr->Crtl_bus_BaseAddress = ConfigPtr->Crtl_bus_BaseAddress;
     InstancePtr->Axilites_BaseAddress = ConfigPtr->Axilites_BaseAddress;
+    InstancePtr->Crtl_bus_BaseAddress = ConfigPtr->Crtl_bus_BaseAddress;
     InstancePtr->IsReady = XIL_COMPONENT_IS_READY;
 
     return XST_SUCCESS;
@@ -86,23 +86,6 @@ u32 XBacksub_Get_return(XBacksub *InstancePtr) {
     Data = XBacksub_ReadReg(InstancePtr->Crtl_bus_BaseAddress, XBACKSUB_CRTL_BUS_ADDR_AP_RETURN);
     return Data;
 }
-void XBacksub_Set_init(XBacksub *InstancePtr, u32 Data) {
-    Xil_AssertVoid(InstancePtr != NULL);
-    Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
-
-    XBacksub_WriteReg(InstancePtr->Crtl_bus_BaseAddress, XBACKSUB_CRTL_BUS_ADDR_INIT_DATA, Data);
-}
-
-u32 XBacksub_Get_init(XBacksub *InstancePtr) {
-    u32 Data;
-
-    Xil_AssertNonvoid(InstancePtr != NULL);
-    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
-
-    Data = XBacksub_ReadReg(InstancePtr->Crtl_bus_BaseAddress, XBACKSUB_CRTL_BUS_ADDR_INIT_DATA);
-    return Data;
-}
-
 void XBacksub_Set_frame_in(XBacksub *InstancePtr, u32 Data) {
     Xil_AssertVoid(InstancePtr != NULL);
     Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
@@ -134,6 +117,23 @@ u32 XBacksub_Get_frame_out(XBacksub *InstancePtr) {
     Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
     Data = XBacksub_ReadReg(InstancePtr->Axilites_BaseAddress, XBACKSUB_AXILITES_ADDR_FRAME_OUT_DATA);
+    return Data;
+}
+
+void XBacksub_Set_init(XBacksub *InstancePtr, u32 Data) {
+    Xil_AssertVoid(InstancePtr != NULL);
+    Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    XBacksub_WriteReg(InstancePtr->Crtl_bus_BaseAddress, XBACKSUB_CRTL_BUS_ADDR_INIT_DATA, Data);
+}
+
+u32 XBacksub_Get_init(XBacksub *InstancePtr) {
+    u32 Data;
+
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    Data = XBacksub_ReadReg(InstancePtr->Crtl_bus_BaseAddress, XBACKSUB_CRTL_BUS_ADDR_INIT_DATA);
     return Data;
 }
 

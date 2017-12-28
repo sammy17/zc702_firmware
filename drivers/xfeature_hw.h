@@ -5,6 +5,29 @@
 // 
 // ==============================================================
 
+// AXILiteS
+// 0x00 : reserved
+// 0x04 : reserved
+// 0x08 : reserved
+// 0x0c : reserved
+// 0x10 : Data signal of frame_in
+//        bit 31~0 - frame_in[31:0] (Read/Write)
+// 0x14 : reserved
+// 0x18 : Data signal of bounding
+//        bit 31~0 - bounding[31:0] (Read/Write)
+// 0x1c : reserved
+// 0x20 : Data signal of featureh
+//        bit 31~0 - featureh[31:0] (Read/Write)
+// 0x24 : reserved
+// (SC = Self Clear, COR = Clear on Read, TOW = Toggle on Write, COH = Clear on Handshake)
+
+#define XFEATURE_AXILITES_ADDR_FRAME_IN_DATA 0x10
+#define XFEATURE_AXILITES_BITS_FRAME_IN_DATA 32
+#define XFEATURE_AXILITES_ADDR_BOUNDING_DATA 0x18
+#define XFEATURE_AXILITES_BITS_BOUNDING_DATA 32
+#define XFEATURE_AXILITES_ADDR_FEATUREH_DATA 0x20
+#define XFEATURE_AXILITES_BITS_FEATUREH_DATA 32
+
 // CRTL_BUS
 // 0x0 : Control signals
 //       bit 0  - ap_start (Read/Write/COH)
@@ -30,27 +53,4 @@
 #define XFEATURE_CRTL_BUS_ADDR_GIE     0x4
 #define XFEATURE_CRTL_BUS_ADDR_IER     0x8
 #define XFEATURE_CRTL_BUS_ADDR_ISR     0xc
-
-// AXILiteS
-// 0x00 : reserved
-// 0x04 : reserved
-// 0x08 : reserved
-// 0x0c : reserved
-// 0x10 : Data signal of frame_in
-//        bit 31~0 - frame_in[31:0] (Read/Write)
-// 0x14 : reserved
-// 0x18 : Data signal of bounding
-//        bit 31~0 - bounding[31:0] (Read/Write)
-// 0x1c : reserved
-// 0x20 : Data signal of featureh
-//        bit 31~0 - featureh[31:0] (Read/Write)
-// 0x24 : reserved
-// (SC = Self Clear, COR = Clear on Read, TOW = Toggle on Write, COH = Clear on Handshake)
-
-#define XFEATURE_AXILITES_ADDR_FRAME_IN_DATA 0x10
-#define XFEATURE_AXILITES_BITS_FRAME_IN_DATA 32
-#define XFEATURE_AXILITES_ADDR_BOUNDING_DATA 0x18
-#define XFEATURE_AXILITES_BITS_BOUNDING_DATA 32
-#define XFEATURE_AXILITES_ADDR_FEATUREH_DATA 0x20
-#define XFEATURE_AXILITES_BITS_FEATUREH_DATA 32
 
