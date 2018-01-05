@@ -129,7 +129,7 @@ int main(int argc, char *argv[]) {
 
     // Initialization communication link
     boost::asio::io_service io_service;
-    ClientUDP client(io_service,"10.10.23.237",8080);
+    ClientUDP client(io_service,"10.0.0.200",8080);
     uint16_t frameNo=0;
     const uint8_t cameraID = 0;
 
@@ -145,6 +145,7 @@ int main(int argc, char *argv[]) {
     cap.set(CV_CAP_PROP_FRAME_HEIGHT,240);
     cap.set(CV_CAP_PROP_FPS,30);
     cap.set(CV_CAP_PROP_CONVERT_RGB,true);
+   // cap.set(CV_CAP_PROP_AUTOFOCUS, 0);
 
 
     src = (uint8_t*)mmap(NULL, DDR_RANGE,PROT_READ|PROT_WRITE, MAP_SHARED, fdIP, TX_BASE_ADDR); 
@@ -181,7 +182,7 @@ int main(int argc, char *argv[]) {
 
     for (;;){
         // Queue the buffer
-        auto begin = std::chrono::high_resolution_clock::now();
+        //auto begin = std::chrono::high_resolution_clock::now();
 
         if (isFirst){
             backsub_config(true);
@@ -192,13 +193,15 @@ int main(int argc, char *argv[]) {
             backsub_config(false);
             isSecond = false;
         }
-
+	auto begin = std::chrono::high_resolution_clock::now();
         cap>>img;
+	auto begin2 = std::chrono::high_resolution_clock::now();
+	if(!img.data) break;
         cv::cvtColor(img, grey, CV_BGR2GRAY);
         memcpy(rgb_src,img.data,76800*3);
         memcpy(src,grey.data,76800);
 
-        auto begin2 = std::chrono::high_resolution_clock::now();
+        //auto begin2 = std::chrono::high_resolution_clock::now();
 
         XBacksub_Start(&backsub);
 
@@ -261,12 +264,13 @@ int main(int argc, char *argv[]) {
         // char c=getch();
         // if (c=='q')
         //   break;
-	printf("Elapsed time backsub : %lld us\n",std::chrono::duration_cast<std::chrono::microseconds>(begin2-begin).count());
+	printf("Elapsed time capture : %lld us\n",std::chrono::duration_cast<std::chrono::microseconds>(begin2-begin).count());
 	printf("Elapsed time backsub : %lld us\n",std::chrono::duration_cast<std::chrono::microseconds>(end2-begin2).count());
 	printf("Elapsed time opencv  : %lld us\n",std::chrono::duration_cast<std::chrono::microseconds>(end3-end2).count());
 	printf("Elapsed time feature : %lld us\n",std::chrono::duration_cast<std::chrono::microseconds>(end4-end3).count());
 	printf("Elapsed time send    : %lld us\n",std::chrono::duration_cast<std::chrono::microseconds>(end-end4).count());
-	//printf("Elapsed time : %lld us\n",std::chrono::duration_cast<std::chron$    
+	printf("Elapsed time tital   : %lld us\n",std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count());
+    
 }
 
 
