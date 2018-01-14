@@ -6,28 +6,75 @@
 
 std::vector<cv::Rect> BGSDetector::detect(cv::Mat &img)
 {
-    std::vector<cv::Rect> detections,found;
-    mask = img.clone();
+    std::vector<cv::Rect> found,detections;
 
-    cv::Mat structuringElement3x3 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
-    cv::Mat structuringElement5x5 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5));
-    cv::Mat structuringElement7x7 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(7, 7));
-    cv::Mat structuringElement9x9 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(9, 9));
+    if(doGamaCorrection)
+        GammaCorrection(img,img,2.0);
 
-    /*
-    cv::dilate(imgThresh, imgThresh, structuringElement7x7);
-    cv::erode(imgThresh, imgThresh, structuringElement3x3);
-    */
+    histograms.clear();
 
-    cv::dilate(mask, mask, structuringElement5x5);
-    cv::dilate(mask, mask, structuringElement5x5);
-    cv::erode(mask, mask, structuringElement5x5);
+    if(method==BGS_GMM)
+    {
+        // Mat imgCopy = img.clone();
+        // cv::GaussianBlur(imgCopy,imgCopy,cv::Size(3, 3), 0);
+        // pMOG2->apply(imgCopy,mask);
+    }
+    else if(method==BGS_MOVING_AVERAGE)
+    {
+        for(int i=2;i>0;i--)
+        {
+            frames[i] = frames[i-1].clone();
+        }
+        frames[0] = img.clone();
+
+        if(frameCount<3)
+        {
+            frameCount++;
+            if(!mask.data)
+                mask = Mat::zeros(img.rows,img.cols,CV_8UC1);
+            return detections;
+        }
+
+        backgroundSubstraction(frames[0],frames[1],frames[2],
+                               bgModel,mask,TH);
+    }
+    else
+    {
+        mask = img.clone();
+    }
+
+#ifdef BGS_DEBUG_MODE
+    cv::imshow("BackSub",mask);
+#endif
+
+
+    cv::Mat structuringElement = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
+
+
+    cv::Mat maskPost;
+    cv::dilate(mask,maskPost, structuringElement);
+    cv::dilate(maskPost, maskPost, structuringElement);
+    cv::erode(maskPost, maskPost, structuringElement);
 
 
 
     std::vector<std::vector<cv::Point> > contours;
 
-    cv::findContours(mask, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+    cv::findContours(maskPost, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+
+    cv::Mat shape(mask.rows,mask.cols,CV_8UC1,Scalar(0));
+
+
+
+    for(int i = 0; i < contours.size(); i++)
+    {
+        cv::Scalar color(255);
+        drawContours(shape, contours, i, color, CV_FILLED);
+    }
+
+#ifdef BGS_DEBUG_MODE
+    cv::imshow("Shape",shape);
+#endif
 
     std::vector<std::vector<cv::Point> > convexHulls(contours.size());
 
@@ -37,18 +84,16 @@ std::vector<cv::Rect> BGSDetector::detect(cv::Mat &img)
     }
 
 
-   
-
     for (auto &convexHull : convexHulls)
     {
         Blob possibleBlob(convexHull);
 
         float record[8] = {
-                possibleBlob.currentBoundingRect.x,
-                possibleBlob.currentBoundingRect.y,
-                possibleBlob.currentBoundingRect.width,
-                possibleBlob.currentBoundingRect.height,
-                possibleBlob.currentBoundingRect.area(),
+                (float)possibleBlob.currentBoundingRect.x,
+                (float)possibleBlob.currentBoundingRect.y,
+                (float)possibleBlob.currentBoundingRect.width,
+                (float)possibleBlob.currentBoundingRect.height,
+                (float)possibleBlob.currentBoundingRect.area(),
                 (float)possibleBlob.dblCurrentAspectRatio,
                 (float)cv::contourArea(possibleBlob.currentContour),
                 (float)possibleBlob.dblCurrentDiagonalSize
@@ -56,25 +101,21 @@ std::vector<cv::Rect> BGSDetector::detect(cv::Mat &img)
 
         if(trainingMode)
         {
-            DetectionRecord dr;
-            memcpy(dr.data,record,8* sizeof(float));
-            data.push_back(dr);
-            found.push_back(possibleBlob.currentBoundingRect);
+            if(method!=BGS_HW || (method==BGS_HW && count>=FRAME_WAIT))
+            {
+                DetectionRecord dr;
+                memcpy(dr.data,record,8* sizeof(float));
+                data.push_back(dr);
+                found.push_back(possibleBlob.currentBoundingRect);
+            }
         }
         else
         {
             Mat x1(1,8,CV_32F,record);
-            Mat d = x1 * coeffMat.t();
+            Mat d = pca.project(x1);
             if(d.at<float>(0)>detectorTH)
                 found.push_back(possibleBlob.currentBoundingRect);
         }
-
-//        Mat x1(1,8,CV_64F,data);
-//        Mat cf(8,8,CV_64F,coeff);
-//
-//        Mat d = x1 * cf;
-//        if(d.at<double>(0)>4203)
-//            found.push_back(possibleBlob.currentBoundingRect);
     }
 
     size_t i, j;
@@ -87,13 +128,20 @@ std::vector<cv::Rect> BGSDetector::detect(cv::Mat &img)
                 break;
         if (j==found.size())
         {
-//            r.x += cvRound(r.width*0.1);
-//            r.width = cvRound(r.width*0.8);
-//            r.y += cvRound(r.height*0.07);
-//            r.height = cvRound(r.height*0.8);
             detections.push_back(r);
+            Mat histogram;
+            Histogram::calcHist(img,shape,r,histogram);
+            histograms.push_back(histogram);
         }
 
+    }
+
+    if(method==BGS_HW && count<FRAME_WAIT+1)
+    {
+        count++;
+        cout << "Training GMM: " << count << endl;
+        if(count>=1800)
+            cout << "GMM fully trained!" << endl;
     }
 
     return detections;
@@ -105,7 +153,7 @@ void BGSDetector::backgroundSubstraction(cv::Mat &frame0, cv::Mat &frame1, cv::M
 {
     cv::Mat frame0g,frame1g,frame2g;
 
-   // convert frames to gray
+    // convert frames to gray
     cvtColor(frame0,frame0g,cv::COLOR_BGR2GRAY);
     cvtColor(frame1,frame1g,cv::COLOR_BGR2GRAY);
     cvtColor(frame2,frame2g,cv::COLOR_BGR2GRAY);
@@ -126,20 +174,26 @@ BGSDetector::BGSDetector(double TH,
                          bool doGammaCorrection,
                          string coeffFilePath,
                          bool trainingMode) :
-TH(TH),
-method(method),
-doGamaCorrection(doGammaCorrection),
-trainingMode(trainingMode),
-coeffFilePath(coeffFilePath)
+        TH(TH),
+        method(method),
+        doGamaCorrection(doGammaCorrection),
+        trainingMode(trainingMode),
+        coeffFilePath(coeffFilePath)
 {
     frameCount = 0;
+    // if(method==BGS_GMM)
+    //     pMOG2 = cv::bgsegm::createBackgroundSubtractorMOG(200,
+    //                                                       2,
+    //                                                       0.7,
+    //                                                       0);
+    count = 0;
     if(!trainingMode)
     {
         coeffFile.open(coeffFilePath,FileStorage::READ);
         if(!coeffFile.isOpened())
             throw runtime_error("Unable to load pca coefficients.");
+        pca.read(coeffFile.root());
         coeffFile["TH"] >> detectorTH;
-        coeffFile["vectors"] >> coeffMat;
     }
 
 }
@@ -191,6 +245,74 @@ void BGSDetector::GammaCorrection(cv::Mat &src, cv::Mat &dst, float fGamma)
 
 }
 
+void BGSDetector::trainDetector()
+{
+    if(!trainingMode)
+        throw runtime_error("Training is only available in training mode.");
+    Mat dataMat((int)data.size(),8,CV_32F);
+    for(int j=0;j<data.size();j++)
+    {
+        for(int k=0;k<8;k++)
+        {
+            dataMat.at<float>(j,k) = data[j].data[k];
+        }
+    }
+    pca = PCA(dataMat,Mat(),PCA::DATA_AS_ROW,1);
+    coeffFile.open(coeffFilePath,FileStorage::WRITE);
+    if(!coeffFile.isOpened())
+        throw runtime_error("Unable to open coefficient file.");
+    pca.write(coeffFile);
+
+
+    Mat matSrc = pca.project(dataMat);
+    double minVal,maxVal;
+    minMaxLoc(matSrc,&minVal,&maxVal);
+
+    int nHistSize = 65536;
+    float fRange[] = { (float)minVal, (float)maxVal};
+    float binSize = ((float)maxVal -  (float)minVal)/nHistSize;
+    const float* fHistRange = { fRange };
+
+    Mat matHist;
+    calcHist(&matSrc, 1, 0, cv::Mat(), matHist, 1, &nHistSize, &fHistRange);
+    normalize(matHist,matHist,1,0,NORM_MINMAX);
+
+    float total = 0.0;
+    float sumB = 0;
+    float wB = 0;
+    float maximum = 0.0;
+    float sum1 = 0;
+    float level;
+    for(int i=0;i<nHistSize;i++)
+    {
+        sum1 += (i*binSize+binSize/2+minVal)*matHist.at<float>(i);
+        total += matHist.at<float>(i);
+    }
+
+    for(int i=0;i<nHistSize;i++)
+    {
+        wB = wB + matHist.at<float>(i);
+        float wF = total - wB;
+        if (wB == 0 || wF == 0)
+            continue;
+        sumB = sumB + (float) (i*binSize+binSize/2+minVal) * matHist.at<float>(i);
+        float mF = (sum1 - sumB) / wF;
+        float  between = wB * wF * ((sumB / wB) - mF) * ((sumB / wB) - mF);
+        if ( between >= maximum )
+        {
+            level = (float)(i*binSize+binSize/2+minVal);
+            maximum = between;
+        }
+
+    }
+
+    cout << "TH: " << level << endl;
+
+    coeffFile << "TH" << level;
+
+    coeffFile.release();
+}
+
 Blob::Blob(std::vector<cv::Point> _contour)
 {
     currentContour = _contour;
@@ -207,9 +329,4 @@ Blob::Blob(std::vector<cv::Point> _contour)
     dblCurrentDiagonalSize = sqrt(pow(currentBoundingRect.width, 2) + pow(currentBoundingRect.height, 2));
 
     dblCurrentAspectRatio = (float)currentBoundingRect.width / (float)currentBoundingRect.height;
-
-    blnStillBeingTracked = true;
-    blnCurrentMatchFoundOrNewBlob = true;
-
-    intNumOfConsecutiveFramesWithoutAMatch = 0;
 }
