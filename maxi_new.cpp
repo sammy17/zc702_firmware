@@ -255,7 +255,7 @@ int main(int argc, char *argv[]) {
         }
         frameNo++;
         frame.set_now();
-        frame.setMask(detector->mask);
+        frame.setMask(detector.mask);
         client.send(frame);
 
         // outFile.close();
